@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CRMS — Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        body { background: #f0f2f5; min-height: 100vh; }
+        .navbar { background: #1a1a2e !important; }
+        .navbar-brand { font-weight: 800; font-size: 1.3rem; color: white !important; }
+        .navbar-brand span { color: #e94560; }
+        .nav-link { color: rgba(255,255,255,0.7) !important; font-weight: 500; }
+        .nav-link:hover, .nav-link.active { color: white !important; }
+        .welcome { padding: 2.5rem 0 1rem; }
+        .welcome h2 { font-weight: 800; color: #1a1a2e; }
+        .welcome p { color: #888; }
+        .module-card { background: white; border-radius: 16px; padding: 2rem; text-decoration: none; color: inherit; display: block; transition: all 0.25s; border: 2px solid transparent; height: 100%; }
+        .module-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+        .card-students:hover { border-color: #e94560; }
+        .card-results:hover  { border-color: #0d6efd; }
+        .card-attend:hover   { border-color: #198754; }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .card-title { font-weight: 700; font-size: 1.2rem; color: #1a1a2e; margin-bottom: 0.5rem; }
+        .card-desc { color: #888; font-size: 0.9rem; }
+        .card-cta { margin-top: 1.5rem; font-size: 0.85rem; font-weight: 600; }
+        .cta-red   { color: #e94560; }
+        .cta-blue  { color: #0d6efd; }
+        .cta-green { color: #198754; }
+        .stat-pill { background: #f8f9fa; border-radius: 8px; padding: 0.3rem 0.8rem; font-size: 0.8rem; font-weight: 600; color: #555; display: inline-block; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="#">CR<span>MS</span></a>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-white-50 small" id="teacherName"></span>
+            <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="welcome">
+        <h2>Welcome back, <span id="firstName">Teacher</span> 👋</h2>
+        <p>Manage your classroom from one place.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <a href="student.html" class="module-card card-students">
+                <div class="card-icon">👨‍🎓</div>
+                <div class="card-title">Student Management</div>
+                <div class="card-desc">Add, edit, view and delete students. Manage class enrollment and profiles.</div>
+                <div class="stat-pill" id="statStudents">Loading...</div>
+                <div class="card-cta cta-red">Manage Students →</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="result.html" class="module-card card-results">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Result Calculator</div>
+                <div class="card-desc">Enter marks, auto-calculate grades and view subject-wise performance.</div>
+                <div class="stat-pill" id="statResults">Loading...</div>
+                <div class="card-cta cta-blue">View Results →</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="attendance.html" class="module-card card-attend">
+                <div class="card-icon">📋</div>
+                <div class="card-title">Attendance Tracker</div>
+                <div class="card-desc">Mark daily attendance, view history and track absence records.</div>
+                <div class="stat-pill" id="statAttend">Loading...</div>
+                <div class="card-cta cta-green">Track Attendance →</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const teacher = JSON.parse(localStorage.getItem('crms_teacher') || 'null');
+    if (!teacher) window.location.href = 'login.html';
+
+    document.getElementById('teacherName').textContent = teacher?.name || '';
+    document.getElementById('firstName').textContent   = (teacher?.name || 'Teacher').split(' ')[0];
+
+    async function loadStats() {
+        try {
+            const [s, r, a] = await Promise.all([
+                fetch('/api').then(r => r.json()),
+                fetch('/api').then(r => r.json()),
+                fetch('/api').then(r => r.json())
+            ]);
+            document.getElementById('statStudents').textContent = s.length + ' Students';
+            document.getElementById('statResults').textContent  = r.length + ' Records';
+            document.getElementById('statAttend').textContent   = a.length + ' Records';
+        } catch {
+            document.getElementById('statStudents').textContent = 'Click to manage';
+            document.getElementById('statResults').textContent  = 'Click to manage';
+            document.getElementById('statAttend').textContent   = 'Click to manage';
+        }
+    }
+
+    loadStats();
+    function logout() { localStorage.removeItem('crms_teacher'); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
